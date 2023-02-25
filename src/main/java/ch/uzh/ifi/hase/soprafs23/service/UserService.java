@@ -13,7 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.Date;
 
 /**
  * User Service
@@ -39,9 +41,26 @@ public class UserService {
     return this.userRepository.findAll();
   }
 
+  public User loginUser(User userToLogin) {
+      User userByUsername = userRepository.findByUsername(userToLogin.getUsername());
+      User userByPassword = userRepository.findByPassword(userToLogin.getPassword());
+
+      if(userByUsername == null && userByPassword == null) {
+          throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
+      }
+
+      if (userByUsername == userByPassword) {
+          userByUsername.setStatus(UserStatus.ONLINE);
+          return userByUsername;
+      } else {
+          throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Username or password incorrect");
+      }
+  }
+
   public User createUser(User newUser) {
     newUser.setToken(UUID.randomUUID().toString());
     newUser.setStatus(UserStatus.OFFLINE);
+    newUser.setCreationDate(new Date());
     checkIfUserExists(newUser);
     // saves the given entity but data is only persisted in the database once
     // flush() is called

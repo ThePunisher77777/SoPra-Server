@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs23.rest.dto;
 
 import ch.uzh.ifi.hase.soprafs23.constant.UserStatus;
+import java.util.Date;
 
 public class UserGetDTO {
 
@@ -8,6 +9,7 @@ public class UserGetDTO {
   private String name;
   private String username;
   private UserStatus status;
+  private Date creationDate;
 
   public Long getId() {
     return id;
@@ -39,5 +41,13 @@ public class UserGetDTO {
 
   public void setStatus(UserStatus status) {
     this.status = status;
+  }
+
+  public Date getCreationDate() {
+    return creationDate;
+  }
+
+  public void setCreationDate(Date creationDate) {
+    this.creationDate = creationDate;
   }
 }
