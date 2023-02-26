@@ -46,13 +46,13 @@ public class UserController {
   }
 
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/users/{userId}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public UserGetDTO getUser(@PathVariable long id) {
+    public UserGetDTO getUser(@PathVariable long userId) {
         // fetch all users in the internal representation
 
-        User user = userService.getUser(id);
+        User user = userService.getUser(userId);
 
         // convert each user to the API representation
         return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);

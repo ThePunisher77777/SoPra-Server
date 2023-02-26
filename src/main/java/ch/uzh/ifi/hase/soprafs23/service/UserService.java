@@ -38,9 +38,9 @@ public class UserService {
     return this.userRepository.findAll();
   }
 
-    public User getUser(Long id) {
-      if(this.userRepository.findById(id).isPresent()) {
-          return this.userRepository.findById(id).get();
+    public User getUser(Long userId) {
+      if(this.userRepository.findById(userId).isPresent()) {
+          return this.userRepository.findById(userId).get();
       } else {
           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
       }
