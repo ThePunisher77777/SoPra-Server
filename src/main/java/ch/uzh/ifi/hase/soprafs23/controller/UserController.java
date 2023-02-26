@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * User Controller
@@ -44,6 +45,19 @@ public class UserController {
     return userGetDTOs;
   }
 
+
+    @GetMapping("/users/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public UserGetDTO getUser(@PathVariable long id) {
+        // fetch all users in the internal representation
+
+        User user = userService.getUser(id);
+
+        // convert each user to the API representation
+        return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+    }
+
   @PostMapping("/users")
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
@@ -59,15 +73,16 @@ public class UserController {
 
   @PostMapping("/login")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
-  public LoginGetDTO loginUser(@RequestBody LoginPostDTO loginPostDTO) {
+  //@ResponseBody
+  public void loginUser(@RequestBody LoginPostDTO loginPostDTO) {
     // convert API user to internal representation
     User userInput = DTOMapper.INSTANCE.convertLoginPostDTOtoEntity(loginPostDTO);
 
     // create user
-    User loggedInUser = userService.loginUser(userInput);
+    //User loggedInUser =
+      userService.loginUser(userInput);
 
     // convert internal representation of user back to API
-    return DTOMapper.INSTANCE.convertEntityToLoginGetDTO(loggedInUser);
+    //return DTOMapper.INSTANCE.convertEntityToUserGetDTO(loggedInUser);
   }
 }
