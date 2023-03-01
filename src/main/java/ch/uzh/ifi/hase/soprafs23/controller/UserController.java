@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs23.controller;
 
 import antlr.StringUtils;
+import ch.uzh.ifi.hase.soprafs23.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs23.entity.User;
 import ch.uzh.ifi.hase.soprafs23.rest.dto.LoginGetDTO;
 import ch.uzh.ifi.hase.soprafs23.rest.dto.UserGetDTO;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -63,11 +65,13 @@ public class UserController {
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public ResponseEntity<LoginGetDTO> createUser(@RequestHeader("username") String username, @RequestHeader("name") String name, @RequestHeader("password") String password) {
-        UserPostDTO userPostDTO = new UserPostDTO();
-        userPostDTO.setUsername(username);
-        userPostDTO.setName(name);
+    public ResponseEntity<UserGetDTO> createUser(@RequestHeader("password") String password, @RequestBody UserPostDTO userPostDTO) {
+        //UserPostDTO userPostDTO = new UserPostDTO();
+//        userPostDTO.setUsername(username);
+//        userPostDTO.setName(name);
+//        userPostDTO.setBirthday(birthday);
         userPostDTO.setPassword(password);
+
         // convert API user to internal representation
         User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
 
@@ -76,10 +80,11 @@ public class UserController {
         // convert internal representation of user back to API
         HttpHeaders headers = new HttpHeaders();
         headers.set("token", createdUser.getToken());
+        headers.set("password", createdUser.getPassword());
 
         return ResponseEntity.ok()
                 .headers(headers)
-                .body(DTOMapper.INSTANCE.convertEntityToLoginGetDTO(createdUser));
+                .body(DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser));
     }
 
     @PostMapping("/login")

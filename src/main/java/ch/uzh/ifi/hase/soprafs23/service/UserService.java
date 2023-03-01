@@ -56,6 +56,7 @@ public class UserService {
         }
 
         if (userByUsername == userByPassword) {
+            userByUsername.setStatus(UserStatus.ONLINE);
             return userByUsername;
         }
         else {
@@ -65,7 +66,7 @@ public class UserService {
 
     public User createUser(User newUser) {
         newUser.setToken(UUID.randomUUID().toString());
-        newUser.setStatus(UserStatus.OFFLINE);
+        newUser.setStatus(UserStatus.ONLINE);
         newUser.setCreationDate(new Date());
         checkIfUserExists(newUser);
         // saves the given entity but data is only persisted in the database once

@@ -44,6 +44,17 @@ public class User implements Serializable {
     @Column(nullable = false)
     private Date creationDate;
 
+    @Column
+    private Date birthday;
+
+    public Date getBirthday() {
+        return birthday;
+    }
+
+    public void setBirthday(Date birthday) {
+        this.birthday = birthday;
+    }
+
     public Long getId() {
         return id;
     }
