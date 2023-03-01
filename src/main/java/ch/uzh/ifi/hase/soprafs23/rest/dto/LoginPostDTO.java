@@ -6,7 +6,6 @@ public class LoginPostDTO {
 
     private String password;
 
-
     public String getPassword() {
         return password;
     }
@@ -22,5 +21,4 @@ public class LoginPostDTO {
     public void setUsername(String username) {
         this.username = username;
     }
-
 }
