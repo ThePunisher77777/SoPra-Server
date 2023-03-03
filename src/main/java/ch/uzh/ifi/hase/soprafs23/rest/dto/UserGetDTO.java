@@ -7,9 +7,11 @@ import java.util.Date;
 public class UserGetDTO {
 
     private Long id;
-    private String name;
+    //private String name;
     private String username;
+
     private UserStatus status;
+    private String token;
     private Date birthday;
     private Date creationDate;
 
@@ -21,13 +23,13 @@ public class UserGetDTO {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
-    }
+    //public String getName() {
+      //  return name;
+    //}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    //public void setName(String name) {
+      //  this.name = name;
+    //}
 
     public String getUsername() {
         return username;
@@ -35,6 +37,14 @@ public class UserGetDTO {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public UserStatus getStatus() {

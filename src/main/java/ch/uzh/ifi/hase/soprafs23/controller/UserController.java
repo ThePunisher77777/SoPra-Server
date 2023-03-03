@@ -1,12 +1,8 @@
 package ch.uzh.ifi.hase.soprafs23.controller;
 
-import antlr.StringUtils;
 import ch.uzh.ifi.hase.soprafs23.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs23.entity.User;
-import ch.uzh.ifi.hase.soprafs23.rest.dto.LoginGetDTO;
-import ch.uzh.ifi.hase.soprafs23.rest.dto.UserGetDTO;
-import ch.uzh.ifi.hase.soprafs23.rest.dto.UserPostDTO;
-import ch.uzh.ifi.hase.soprafs23.rest.dto.LoginPostDTO;
+import ch.uzh.ifi.hase.soprafs23.rest.dto.*;
 import ch.uzh.ifi.hase.soprafs23.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs23.service.UserService;
 import org.springframework.http.HttpHeaders;
@@ -15,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -35,73 +30,84 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public List<UserGetDTO> getAllUsers() {
-        // fetch all users in the internal representation
+    public ResponseEntity<List<UserGetDTO>> getAllUsers(@RequestHeader("token") String token) {
+        userService.canUserBeAuthorizedByToken(token);
+
         List<User> users = userService.getUsers();
         List<UserGetDTO> userGetDTOs = new ArrayList<>();
 
-        // convert each user to the API representation
         for (User user : users) {
             userGetDTOs.add(DTOMapper.INSTANCE.convertEntityToUserGetDTO(user));
         }
-        return userGetDTOs;
-    }
 
-
-    @GetMapping("/users/{userId}")
-    @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
-    public UserGetDTO getUser(@PathVariable long userId) {
-        // fetch all users in the internal representation
-
-        User user = userService.getUser(userId);
-
-        // convert each user to the API representation
-        return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+        return ResponseEntity.ok()
+                .body(userGetDTOs);
     }
 
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
     public ResponseEntity<UserGetDTO> createUser(@RequestHeader("password") String password, @RequestBody UserPostDTO userPostDTO) {
-        //UserPostDTO userPostDTO = new UserPostDTO();
-//        userPostDTO.setUsername(username);
-//        userPostDTO.setName(name);
-//        userPostDTO.setBirthday(birthday);
         userPostDTO.setPassword(password);
 
-        // convert API user to internal representation
         User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
 
-        // create user
         User createdUser = userService.createUser(userInput);
-        // convert internal representation of user back to API
+
         HttpHeaders headers = new HttpHeaders();
         headers.set("token", createdUser.getToken());
-        headers.set("password", createdUser.getPassword());
 
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser));
     }
 
+    @GetMapping("/users/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public ResponseEntity<UserGetDTO> getUser(@PathVariable long userId, @RequestHeader("token") String token) {
+        userService.canUserBeAuthorizedByToken(token);
+
+        User user = userService.getUser(userId);
+        user.setToken(token);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("token", user.getToken());
+
+        System.out.println("TOKEN" + headers.get("token"));
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(DTOMapper.INSTANCE.convertEntityToUserGetDTO(user));
+
+//        return ResponseEntity.ok().body(DTOMapper.INSTANCE.convertEntityToUserGetDTO(user));
+
+    }
+
+    @PutMapping ("/users/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public ResponseEntity<UserGetDTO> editUser(@PathVariable long userId, @RequestHeader("token") String token) {
+        userService.canUserBeAuthorizedByToken(token);
+
+        User user = userService.getUser(userId);
+
+        return ResponseEntity.ok().body(DTOMapper.INSTANCE.convertEntityToUserGetDTO(user));
+
+    }
+
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
-    //@ResponseBody
     public ResponseEntity<LoginGetDTO> loginUser(@RequestHeader("username") String username, @RequestHeader("password") String password) {
         LoginPostDTO loginPostDTO = new LoginPostDTO();
         loginPostDTO.setUsername(username);
         loginPostDTO.setPassword(password);
-        // convert API user to internal representation
+
         User userInput = DTOMapper.INSTANCE.convertLoginPostDTOtoEntity(loginPostDTO);
 
-        // create user
-        //User loggedInUser =
         User loggedInUser = userService.loginUser(userInput);
 
-        // convert internal representation of user back to API
         HttpHeaders headers = new HttpHeaders();
         headers.set("token", loggedInUser.getToken());
 
@@ -110,6 +116,13 @@ public class UserController {
                 .body(DTOMapper.INSTANCE.convertEntityToLoginGetDTO(loggedInUser));
     }
 
-    // public boolean verifyToken()
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.OK)
+    public void logoutUser(@RequestHeader("token") String token) {
 
+        User userToBeLoggedOut = userService.logoutUser(token);
+
+        userToBeLoggedOut.setStatus(UserStatus.OFFLINE);
+
+    }
 }

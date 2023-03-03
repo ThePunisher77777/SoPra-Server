@@ -47,6 +47,12 @@ public class UserService {
         }
     }
 
+    public void canUserBeAuthorizedByToken(String token) {
+        if (this.userRepository.findByToken(token).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized access token");
+        }
+    }
+
     public User loginUser(User userToLogin) {
         User userByUsername = userRepository.findByUsername(userToLogin.getUsername());
         User userByPassword = userRepository.findByPassword(userToLogin.getPassword());
@@ -61,6 +67,15 @@ public class UserService {
         }
         else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Username or password incorrect");
+        }
+    }
+
+    public User logoutUser(String token) {
+        if (this.userRepository.findByToken(token).isPresent()) {
+            return this.userRepository.findByToken(token).get();
+        }
+        else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
         }
     }
 
