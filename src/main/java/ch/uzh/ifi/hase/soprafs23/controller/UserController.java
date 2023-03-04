@@ -48,9 +48,7 @@ public class UserController {
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public ResponseEntity<UserGetDTO> createUser(@RequestHeader("password") String password, @RequestBody UserPostDTO userPostDTO) {
-        userPostDTO.setPassword(password);
-
+    public ResponseEntity<UserGetDTO> createUser(@RequestBody UserPostDTO userPostDTO) {
         User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
 
         User createdUser = userService.createUser(userInput);
@@ -58,19 +56,16 @@ public class UserController {
         HttpHeaders headers = new HttpHeaders();
         headers.set("token", createdUser.getToken());
 
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser));
+        return new ResponseEntity<>(DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser), headers, HttpStatus.CREATED);
     }
 
     @GetMapping("/users/{userId}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public ResponseEntity<UserGetDTO> getUser(@PathVariable long userId, @RequestHeader("token") String token) {
+    public ResponseEntity<UserGetDTO> getUser(@RequestParam long userId, @RequestHeader("token") String token) {
         userService.canUserBeAuthorizedByToken(token);
 
         User user = userService.getUser(userId);
-        user.setToken(token);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("token", user.getToken());
@@ -81,32 +76,29 @@ public class UserController {
                 .headers(headers)
                 .body(DTOMapper.INSTANCE.convertEntityToUserGetDTO(user));
 
-//        return ResponseEntity.ok().body(DTOMapper.INSTANCE.convertEntityToUserGetDTO(user));
-
     }
 
     @PutMapping ("/users/{userId}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-    public ResponseEntity<UserGetDTO> editUser(@PathVariable long userId, @RequestHeader("token") String token) {
+    public ResponseEntity updateUser(@RequestHeader("token") String token, @RequestBody UserPutDTO userPutDTO) {
         userService.canUserBeAuthorizedByToken(token);
 
-        User user = userService.getUser(userId);
+        User userToBeUpdated = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
 
-        return ResponseEntity.ok().body(DTOMapper.INSTANCE.convertEntityToUserGetDTO(user));
+        userService.updateUser(userToBeUpdated, token);
+
+        return ResponseEntity.noContent().build();
 
     }
 
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<LoginGetDTO> loginUser(@RequestHeader("username") String username, @RequestHeader("password") String password) {
-        LoginPostDTO loginPostDTO = new LoginPostDTO();
-        loginPostDTO.setUsername(username);
-        loginPostDTO.setPassword(password);
-
+    public ResponseEntity<LoginGetDTO> loginUser(@RequestBody LoginPostDTO loginPostDTO) {
         User userInput = DTOMapper.INSTANCE.convertLoginPostDTOtoEntity(loginPostDTO);
 
         User loggedInUser = userService.loginUser(userInput);
+        loggedInUser.setStatus(UserStatus.ONLINE);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("token", loggedInUser.getToken());
@@ -120,9 +112,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public void logoutUser(@RequestHeader("token") String token) {
 
-        User userToBeLoggedOut = userService.logoutUser(token);
-
-        userToBeLoggedOut.setStatus(UserStatus.OFFLINE);
+        userService.logoutUser(token);
 
     }
 }

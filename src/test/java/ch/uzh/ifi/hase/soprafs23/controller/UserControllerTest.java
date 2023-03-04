@@ -47,8 +47,10 @@ public class UserControllerTest {
   public void givenUsers_whenGetUsers_thenReturnJsonArray() throws Exception {
     // given
     User user = new User();
+    user.setId(1L);
     user.setName("Firstname Lastname");
     user.setUsername("firstname@lastname");
+    user.setPassword("secret");
     user.setStatus(UserStatus.OFFLINE);
 
     List<User> allUsers = Collections.singletonList(user);

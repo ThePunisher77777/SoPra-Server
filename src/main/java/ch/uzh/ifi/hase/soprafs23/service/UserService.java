@@ -55,13 +55,12 @@ public class UserService {
 
     public User loginUser(User userToLogin) {
         User userByUsername = userRepository.findByUsername(userToLogin.getUsername());
-        User userByPassword = userRepository.findByPassword(userToLogin.getPassword());
 
-        if (userByUsername == null && userByPassword == null) {
+        if (userByUsername == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
         }
 
-        if (userByUsername == userByPassword) {
+        if (userByUsername.getPassword().equals(userToLogin.getPassword())) {
             userByUsername.setStatus(UserStatus.ONLINE);
             return userByUsername;
         }
@@ -70,9 +69,9 @@ public class UserService {
         }
     }
 
-    public User logoutUser(String token) {
-        if (this.userRepository.findByToken(token).isPresent()) {
-            return this.userRepository.findByToken(token).get();
+    public void logoutUser(String token) {
+        if (userRepository.findByToken(token).isPresent()) {
+            userRepository.findByToken(token).get().setStatus(UserStatus.OFFLINE);
         }
         else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
@@ -91,6 +90,26 @@ public class UserService {
 
         log.debug("Created Information for User: {}", newUser);
         return newUser;
+    }
+
+    public void updateUser(User updateUser, String token) {
+        if(userRepository.findByToken(token).isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("User not found user"));
+        } else {
+            User updatedUser = userRepository.findByToken(token).get();
+
+            checkIfUsernameIsAlreadyTaken(updateUser, updatedUser);
+
+            updatedUser.setUsername(updateUser.getUsername());
+            updatedUser.setBirthday(updateUser.getBirthday());
+
+            // saves the given entity but data is only persisted in the database once
+            // flush() is called
+            userRepository.save(updatedUser);
+            userRepository.flush();
+
+            log.debug("Created Information for User: {}", updateUser);
+        }
     }
 
     /**
@@ -113,10 +132,21 @@ public class UserService {
                     String.format(baseErrorMessage, "username and the name", "are"));
         }
         else if (userByUsername != null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(baseErrorMessage, "username", "is"));
+            throw new ResponseStatusException(HttpStatus.CONFLICT, String.format(baseErrorMessage, "username", "is"));
         }
         else if (userByName != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(baseErrorMessage, "name", "is"));
+        }
+    }
+
+    private void checkIfUsernameIsAlreadyTaken(User userToBeUpdated, User userOriginally) {
+        User userByUsername = userRepository.findByUsername(userToBeUpdated.getUsername());
+
+        if (userByUsername != null) {
+            if(userByUsername.getUsername().equals(userOriginally.getUsername())) {
+                return;
+            }
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username is already taken");
         }
     }
 }
