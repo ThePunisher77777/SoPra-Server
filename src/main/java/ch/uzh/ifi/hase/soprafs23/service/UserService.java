@@ -69,9 +69,11 @@ public class UserService {
         }
     }
 
-    public void logoutUser(String token) {
+    public User logoutUser(String token) {
         if (userRepository.findByToken(token).isPresent()) {
-            userRepository.findByToken(token).get().setStatus(UserStatus.OFFLINE);
+            User userToBeLoggedOut = userRepository.findByToken(token).get();
+            userToBeLoggedOut.setStatus(UserStatus.OFFLINE);
+            return userToBeLoggedOut;
         }
         else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
@@ -93,10 +95,15 @@ public class UserService {
     }
 
     public void updateUser(User updateUser, String token) {
-        if(userRepository.findByToken(token).isEmpty()){
+        if (userRepository.findByToken(token).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("User not found user"));
-        } else {
+        }
+        else {
             User updatedUser = userRepository.findByToken(token).get();
+
+            if (updateUser.getUsername() == null || updateUser.getUsername().isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username can't be empty");
+            }
 
             checkIfUsernameIsAlreadyTaken(updateUser, updatedUser);
 
@@ -143,7 +150,7 @@ public class UserService {
         User userByUsername = userRepository.findByUsername(userToBeUpdated.getUsername());
 
         if (userByUsername != null) {
-            if(userByUsername.getUsername().equals(userOriginally.getUsername())) {
+            if (userByUsername.getUsername().equals(userOriginally.getUsername())) {
                 return;
             }
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username is already taken");

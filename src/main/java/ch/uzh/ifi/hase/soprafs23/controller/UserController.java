@@ -96,7 +96,6 @@ public class UserController {
         User userInput = DTOMapper.INSTANCE.convertLoginPostDTOtoEntity(loginPostDTO);
 
         User loggedInUser = userService.loginUser(userInput);
-        loggedInUser.setStatus(UserStatus.ONLINE);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("token", loggedInUser.getToken());
@@ -108,9 +107,12 @@ public class UserController {
 
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.OK)
-    public void logoutUser(@RequestHeader("token") String token) {
+    public ResponseEntity<LogoutPostDTO> logoutUser(@RequestHeader("token") String token) {
 
-        userService.logoutUser(token);
+        User loggedOutUser = userService.logoutUser(token);
+
+        return ResponseEntity.ok()
+                .body(DTOMapper.INSTANCE.convertEntityToLogoutPostDTO(loggedOutUser));
 
     }
 }
