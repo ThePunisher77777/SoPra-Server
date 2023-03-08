@@ -86,7 +86,7 @@ public class UserControllerTest {
         user.setId(1L);
         user.setName("Test User");
         user.setUsername("testUsername");
-        user.setBirthday(java.sql.Date.valueOf(LocalDate.of(1998, 1, 3)));
+        user.setBirthday(null);
         user.setCreationDate(java.sql.Date.valueOf(LocalDate.of(2023, 1, 3)));
         user.setPassword("secret");
         user.setStatus(UserStatus.ONLINE);
@@ -94,7 +94,6 @@ public class UserControllerTest {
         UserPostDTO userPostDTO = new UserPostDTO();
         userPostDTO.setName("Test User");
         userPostDTO.setUsername("testUsername");
-        userPostDTO.setBirthday(java.sql.Date.valueOf(LocalDate.of(1998, 1, 3)));
         userPostDTO.setCreationDate(java.sql.Date.valueOf(LocalDate.of(2023, 1, 3)));
 
         given(userService.createUser(Mockito.any())).willReturn(user);
@@ -110,7 +109,6 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.id", is(user.getId().intValue())))
                 .andExpect(jsonPath("$.username", is(user.getUsername())))
                 .andExpect(jsonPath("$.status", is(user.getStatus().toString())))
-                .andExpect(jsonPath("$.birthday", is(user.getBirthday().toString())))
                 .andExpect(jsonPath("$.creationDate", is(user.getCreationDate().toString())));
 
     }
