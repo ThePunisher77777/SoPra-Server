@@ -85,8 +85,7 @@ public class UserService {
         newUser.setStatus(UserStatus.ONLINE);
         newUser.setCreationDate(new Date());
         checkIfUserExists(newUser);
-        // saves the given entity but data is only persisted in the database once
-        // flush() is called
+
         newUser = userRepository.save(newUser);
         userRepository.flush();
 
@@ -110,8 +109,6 @@ public class UserService {
             updatedUser.setUsername(updateUser.getUsername());
             updatedUser.setBirthday(updateUser.getBirthday());
 
-            // saves the given entity but data is only persisted in the database once
-            // flush() is called
             userRepository.save(updatedUser);
             userRepository.flush();
 
