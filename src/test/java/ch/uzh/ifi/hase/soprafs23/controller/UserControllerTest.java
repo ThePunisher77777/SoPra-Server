@@ -144,8 +144,6 @@ public class UserControllerTest {
 
     }
 
-    // TODO: Put request content() not working
-
     @Test
     public void userProfileUpdate_validInput_updateUserProfile() throws Exception {
         // given
